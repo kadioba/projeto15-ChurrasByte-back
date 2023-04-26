@@ -1,4 +1,5 @@
 import { db } from "../database/database.connection.js"
+import { ObjectId } from "mongodb"
 
 export async function createProduct(req, res) {
 
@@ -28,3 +29,55 @@ export async function getProducts(req, res) {
         res.status(500).send(err.message)
     }
 }
+
+export async function getProductById(req, res) {
+
+    try {
+        const product = await db.collection('products').findOne({ _id: new ObjectId(req.params.id) });
+
+        if (!product) return res.status(404).send('Produto não encontrado')
+
+        res.status(200).send(product)
+
+    } catch (err) {
+        res.status(500).send(err.message)
+    }
+};
+
+export async function updateProduct(req, res) {
+
+    try {
+        const productExists = await db.collection('products').findOne({ _id: new ObjectId(req.params.id) });
+
+        if (!productExists) return res.status(404).send('Produto não encontrado')
+
+        const updateResult = await db.collection('products').updateOne({ _id: new ObjectId(req.params.id) }, { $set: req.body });
+
+        if (updateResult.modifiedCount === 0) {
+            res.status(304).send("Nenhuma modificacao realizada");
+            return;
+        }
+
+        res.status(200).send("Produto atualizado com sucesso")
+
+    } catch (err) {
+        res.status(500).send(err.message)
+    }
+};
+
+export async function deleteProduct(req, res) {
+
+    try {
+        const deleteResult = await db.collection('products').deleteOne({ _id: new ObjectId(req.params.id) });
+
+        if (deleteResult.deletedCount === 0) {
+            res.status(404).send('Produto não encontrado');
+            return;
+        }
+
+        res.status(200).send('Produto deletado com sucesso');
+
+    } catch (err) {
+        res.status(500).send(err.message)
+    }
+};
