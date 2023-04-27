@@ -16,3 +16,8 @@ export const userSchema = joi.object({
         'any.required': 'O email é obrigatório'
     })
 })
+
+export const loginSchema = joi.object({
+    email: joi.string().email().required(),
+    password: joi.string().min(3).required()
+})
