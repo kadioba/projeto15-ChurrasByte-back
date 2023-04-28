@@ -16,15 +16,23 @@ export async function addToCart(req, res) {
         console.log(user)
         if (!user) return res.status(401).send("Usuario não encontrado")
 
-        if (user) {
-            const addToUserCart = await db.collection("users").updateOne(
-                { _id: new ObjectId(user._id) },
-                { $push: { cart: req.body } }
-            )
+        const newProduct = req.body;
+        const existingProductIndex = user.cart.findIndex(item => item.productId === newProduct.productId);
 
-            res.status(200).send("Produto adicionado ao carrinho")
-
+        if (existingProductIndex >= 0) {
+            user.cart[existingProductIndex].quantity += newProduct.quantity;
+            await db.collection("users").updateOne(
+                { _id: user._id },
+                { $set: { [`cart.${existingProductIndex}.quantity`]: user.cart[existingProductIndex].quantity } }
+            );
+        } else {
+            await db.collection("users").updateOne(
+                { _id: user._id },
+                { $push: { cart: newProduct } }
+            );
         }
+
+        res.status(200).send("Produto adicionado ao carrinho")
 
     } catch (err) {
         return res.status(500).send(err.message);
