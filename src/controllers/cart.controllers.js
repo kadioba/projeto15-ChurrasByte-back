@@ -38,3 +38,24 @@ export async function addToCart(req, res) {
         return res.status(500).send(err.message);
     }
 }
+
+export async function getCart(req, res) {
+    const { authorization } = req.headers;
+    const token = authorization?.replace('Bearer ', '');
+
+    if (!token) return res.status(401).send("Token de usuario necessario para realizar a operação")
+
+    try {
+        const session = await db.collection("sessions").findOne({ token });
+        if (!session) return res.status(401).send("Sessão não encontrada");
+
+        const user = await db.collection("users").findOne({ _id: session.userId })
+        console.log(user)
+        if (!user) return res.status(401).send("Usuario não encontrado")
+
+        res.status(200).send(user.cart)
+
+    } catch (err) {
+        return res.status(500).send(err.message);
+    }
+}
