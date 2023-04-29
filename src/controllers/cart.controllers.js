@@ -17,7 +17,7 @@ export async function addToCart(req, res) {
         if (!user) return res.status(401).send("Usuario não encontrado")
 
         const newProduct = req.body;
-        const existingProductIndex = user.cart.findIndex(item => item.productId === newProduct.productId);
+        const existingProductIndex = user.cart.findIndex(item => item._id === newProduct._id);
 
         if (existingProductIndex >= 0) {
             user.cart[existingProductIndex].quantity += newProduct.quantity;
