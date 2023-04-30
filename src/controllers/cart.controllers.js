@@ -67,6 +67,8 @@ export async function updateCartItem(req, res) {
 
     if (!token) return res.status(401).send("Token de usuario necessario para realizar a operação")
 
+    if (req.body.quantity < 0) return res.status(400).send("Quantidade invalida")
+
     try {
         const session = await db.collection("sessions").findOne({ token });
         if (!session) return res.status(401).send("Sessão não encontrada");
@@ -78,7 +80,7 @@ export async function updateCartItem(req, res) {
         console.log(req.params.itemId)
 
         const existingProductIndex = user.cart.findIndex(item => item._id === itemId);
-        if (!existingProductIndex) return res.status(404).send("Produto não encontrado")
+        if (existingProductIndex < 0) return res.status(404).send("Produto não encontrado")
 
         await db.collection("users").updateOne(
             { _id: user._id },
