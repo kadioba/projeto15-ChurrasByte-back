@@ -63,6 +63,7 @@ export async function getCart(req, res) {
 export async function updateCartItem(req, res) {
     const { authorization } = req.headers;
     const token = authorization?.replace('Bearer ', '');
+    const { itemId } = req.params
 
     if (!token) return res.status(401).send("Token de usuario necessario para realizar a operação")
 
@@ -72,25 +73,22 @@ export async function updateCartItem(req, res) {
 
         const user = await db.collection("users").findOne({ _id: session.userId })
         console.log(user)
-        if (!user) return res.status(401).send("Usuario não encontrado")
+        if (!user) return res.status(401).send("Usuario não encontrado");
+        console.log(user)
+        console.log(req.params.itemId)
 
-        const existingProductIndex = user.cart.findIndex(item => item._id === req.body._id);
+        const existingProductIndex = user.cart.findIndex(item => item._id === itemId);
+        if (!existingProductIndex) return res.status(404).send("Produto não encontrado")
 
-        if (existingProductIndex >= 0) {
-            if (req.body.operator === "sum") {
-                user.cart[existingProductIndex].quantity += 1;
-            } if (req.body.operator === "sub") {
-                user.cart[existingProductIndex].quantity -= 1;
-            }
-            await db.collection("users").updateOne(
-                { _id: user._id },
-                { $set: { [`cart.${existingProductIndex}.quantity`]: user.cart[existingProductIndex].quantity } }
-            );
+        await db.collection("users").updateOne(
+            { _id: user._id },
+            { $set: { [`cart.${existingProductIndex}.quantity`]: req.body.quantity } }
+        );
 
-            const updatedUser = await db.collection("users").findOne({ _id: session.userId })
+        const updatedUser = await db.collection("users").findOne({ _id: session.userId })
 
-            res.status(200).send(updatedUser.cart)
-        }
+        res.status(200).send(updatedUser.cart)
+
     } catch (err) {
         res.status(500).send(err.message)
 

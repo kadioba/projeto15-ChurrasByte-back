@@ -7,7 +7,7 @@ const cartRouter = Router()
 
 cartRouter.get('/get-cart', getCart);
 cartRouter.post('/add-to-cart', validateSchema(addToCartSchema), addToCart);
-cartRouter.put('/edit-from-cart/:itemId', updateCartItem);
+cartRouter.put('/update-one/:itemId', updateCartItem);
 //cartRouter.delete('/delete-from-cart/:itemId', deleteCartItem);
 
 export default cartRouter
