@@ -59,3 +59,41 @@ export async function getCart(req, res) {
         return res.status(500).send(err.message);
     }
 }
+
+export async function updateCartItem(req, res) {
+    const { authorization } = req.headers;
+    const token = authorization?.replace('Bearer ', '');
+
+    if (!token) return res.status(401).send("Token de usuario necessario para realizar a operação")
+
+    try {
+        const session = await db.collection("sessions").findOne({ token });
+        if (!session) return res.status(401).send("Sessão não encontrada");
+
+        const user = await db.collection("users").findOne({ _id: session.userId })
+        console.log(user)
+        if (!user) return res.status(401).send("Usuario não encontrado")
+
+        const existingProductIndex = user.cart.findIndex(item => item._id === req.body._id);
+
+        if (existingProductIndex >= 0) {
+            if (req.body.operator === "sum") {
+                user.cart[existingProductIndex].quantity += 1;
+            } if (req.body.operator === "sub") {
+                user.cart[existingProductIndex].quantity -= 1;
+            }
+            await db.collection("users").updateOne(
+                { _id: user._id },
+                { $set: { [`cart.${existingProductIndex}.quantity`]: user.cart[existingProductIndex].quantity } }
+            );
+
+            const updatedUser = await db.collection("users").findOne({ _id: session.userId })
+
+            res.status(200).send(updatedUser.cart)
+        }
+    } catch (err) {
+        res.status(500).send(err.message)
+
+    }
+
+}
