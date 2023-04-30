@@ -1,6 +1,6 @@
 import { db } from "../database/database.connection.js";
 import bcrypt from "bcrypt"
-import {v4 as uuid} from "uuid"
+import { v4 as uuid } from "uuid"
 
 export async function signUp(req, res) {
     const { password, email, name } = req.body;
@@ -25,7 +25,7 @@ export async function signUp(req, res) {
     }
 }
 
-export async function login(req, res){
+export async function login(req, res) {
     const { email, password } = req.body
 
     try {
@@ -50,6 +50,18 @@ export async function logout(req, res) {
     try {
         await db.collection("sessions").deleteOne({ token });
         res.sendStatus(200);
+    } catch (err) {
+        res.status(500).send(err.message);
+    }
+}
+
+export async function getUser(req, res) {
+    const { userId } = res.locals.session;
+
+    try {
+        const user = await db.collection("users").findOne({ _id: userId })
+        delete user.password
+        res.status(200).send(user)
     } catch (err) {
         res.status(500).send(err.message);
     }
