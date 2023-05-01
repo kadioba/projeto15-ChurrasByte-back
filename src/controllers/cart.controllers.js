@@ -13,7 +13,6 @@ export async function addToCart(req, res) {
         if (!session) return res.status(401).send("Sessão não encontrada");
 
         const user = await db.collection("users").findOne({ _id: session.userId })
-        console.log(user)
         if (!user) return res.status(401).send("Usuario não encontrado")
 
         const newProduct = req.body;
@@ -50,7 +49,6 @@ export async function getCart(req, res) {
         if (!session) return res.status(401).send("Sessão não encontrada");
 
         const user = await db.collection("users").findOne({ _id: session.userId })
-        console.log(user)
         if (!user) return res.status(401).send("Usuario não encontrado")
 
         res.status(200).send(user.cart)
@@ -74,10 +72,7 @@ export async function updateCartItem(req, res) {
         if (!session) return res.status(401).send("Sessão não encontrada");
 
         const user = await db.collection("users").findOne({ _id: session.userId })
-        console.log(user)
         if (!user) return res.status(401).send("Usuario não encontrado");
-        console.log(user)
-        console.log(req.params.itemId)
 
         const existingProductIndex = user.cart.findIndex(item => item._id === itemId);
         if (existingProductIndex < 0) return res.status(404).send("Produto não encontrado")

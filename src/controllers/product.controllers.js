@@ -20,7 +20,17 @@ export async function createProduct(req, res) {
 }
 
 export async function getProducts(req, res) {
+    const { filter } = req.query
 
+    if (filter) {
+        try {
+            const products = await db.collection("products").find({category: filter}).toArray()
+            return res.status(200).send(products)
+
+        } catch (err) {
+            return res.status(500).send(err.message)
+        }
+    }
     try {
         const products = await db.collection("products").find().toArray()
         res.status(200).send(products)
