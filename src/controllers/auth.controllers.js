@@ -1,5 +1,6 @@
 import { db } from "../database/database.connection.js";
 import bcrypt from "bcrypt"
+import { ObjectId } from "mongodb";
 import { v4 as uuid } from "uuid"
 
 export async function signUp(req, res) {
@@ -37,7 +38,7 @@ export async function login(req, res) {
 
         const token = uuid();
         await db.collection("sessions").insertOne({ token, userId: user._id });
-        res.send({ token, userName: user.name });
+        res.send({ token, userName: user.name, userImage: user.image });
 
     } catch (err) {
         res.status(500).send(err.message);
@@ -62,6 +63,21 @@ export async function getUser(req, res) {
         const user = await db.collection("users").findOne({ _id: userId })
         delete user.password
         res.status(200).send(user)
+    } catch (err) {
+        res.status(500).send(err.message);
+    }
+}
+
+export async function updateUserImg(req, res){
+    const {image} = req.body
+    const {userId} = res.locals.session;
+    console.log(userId)
+
+    try {
+        const result = await db.collection("users").updateOne(
+            {_id: userId}, {$set: {image: image}}
+            )
+        res.sendStatus(200)
     } catch (err) {
         res.status(500).send(err.message);
     }
