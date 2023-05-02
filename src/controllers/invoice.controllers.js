@@ -1,6 +1,7 @@
 import bcrypt from "bcrypt"
 import { db } from "../database/database.connection.js";
 import { ObjectId } from "mongodb";
+import dayjs from "dayjs";
 
 export async function newInvoice(req, res) {
     const { cart } = req.body
@@ -15,7 +16,7 @@ export async function newInvoice(req, res) {
                 { $set: { stock: newStock } })
         }
 
-        const invoice = await db.collection("invoices").insertOne({ ...req.body, creditCard: bcrypt.hashSync(req.body.creditCard, 10), cvv: bcrypt.hashSync(req.body.cvv, 10), expireDate: bcrypt.hashSync(req.body.expireDate, 10) })
+        const invoice = await db.collection("invoices").insertOne({ ...req.body,date: dayjs().valueOf(), creditCard: bcrypt.hashSync(req.body.creditCard, 10), cvv: bcrypt.hashSync(req.body.cvv, 10), expireDate: bcrypt.hashSync(req.body.expireDate, 10) })
 
         if (req.body.userId) {
             const user = await db.collection("users").findOne({ _id: new ObjectId(req.body.userId) })
@@ -40,6 +41,7 @@ export async function getInvoice(req, res){
     try {
         const user = await db.collection("users").findOne({ _id: userId })
         const invoices = await db.collection("invoices").find({email: user.email}).toArray()
+
         res.status(200).send(invoices.reverse())
 
     } catch (err) {
