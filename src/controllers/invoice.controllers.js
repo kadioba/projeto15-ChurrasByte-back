@@ -32,3 +32,18 @@ export async function newInvoice(req, res) {
 
     }
 }
+
+export async function getInvoice(req, res){
+    const { userId } = res.locals.session;
+    console.log(userId)
+
+    try {
+        const user = await db.collection("users").findOne({ _id: userId })
+        const invoices = await db.collection("invoices").find({email: user.email}).toArray()
+        res.status(200).send(invoices.reverse())
+
+    } catch (err) {
+        res.status(500).send(err.message);
+    }
+
+}
